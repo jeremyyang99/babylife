@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👶 婴儿生活管家 · AI 版</title>
+<style>
+/* ====== Glass Design System (源自升级版04，完美适配婴儿主题) ====== */
+:root {
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-2xl: 28px;
+  --dur: 0.25s; --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --page-bg: #eef1f6; --page-bg2: #dce2ee;
+  --modal-overlay-bg: rgba(0,0,0,0.10);
+  --lg-glass-bg: rgba(255,255,255,0.18);
+  --lg-glass-border: 1px solid rgba(255,255,255,0.28);
+  --lg-blur: blur(40px) saturate(160%);
+  --lg-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.04);
+  --thin-bg: rgba(255,255,255,0.22);
+  --thin-border: 1px solid rgba(255,255,255,0.32);
+  --thin-blur: blur(16px) saturate(140%);
+  --thin-shadow: 0 1px 2px rgba(0,0,0,0.01), 0 2px 8px rgba(0,0,0,0.03);
+  --regular-bg: rgba(255,255,255,0.28);
+  --regular-border: 1px solid rgba(255,255,255,0.35);
+  --regular-blur: blur(24px) saturate(150%);
+  --regular-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 6px 20px rgba(0,0,0,0.04);
+  --clear-bg: rgba(255,255,255,0.14);
+  --clear-border: 1px solid rgba(255,255,255,0.18);
+  --clear-blur: blur(20px) saturate(130%);
+  --clear-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  --thick-bg: rgba(255,255,255,0.36);
+  --thick-border: 1px solid rgba(255,255,255,0.42);
+  --thick-blur: blur(20px) saturate(150%);
+  --glass-accent: #5f6775;
+  --accent-soft: rgba(95,103,117,0.10);
+  --glass-accent-text: #434852;
+  --label-primary: rgba(0,0,0,0.90);
+  --label-secondary: rgba(0,0,0,0.65);
+  --label-tertiary: rgba(0,0,0,0.45);
+  --label-quaternary: rgba(0,0,0,0.25);
+  --fill-primary: rgba(0,0,0,0.10);
+  --fill-secondary: rgba(0,0,0,0.07);
+  --glass-green: #34c759; --glass-orange: #ff9f0a;
+  --glass-red: #ff453a; --glass-purple: #af52de;
+  --border-medium: rgba(0,0,0,0.12);
+  --shadow-sm: var(--thin-shadow);
+  --shadow-md: var(--regular-shadow);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(145deg, var(--page-bg), var(--page-bg2));
+  color: var(--label-primary);
+  min-height: 100vh;
+  overflow: hidden;
+}
+.app {
+  display: grid;
+  grid-template-columns: var(--left-width, 220px) 5px 1fr 5px var(--right-width, 420px);
+  height: 100vh;
+  overflow: hidden;
+}
+.resizer { background: var(--fill-primary); cursor: col-resize; z-index:10; transition: background 0.15s; position:relative; }
+.resizer::after { content:''; position:absolute; top:0; bottom:0; left:50%; transform:translateX(-50%); width:1px; background:var(--fill-secondary); }
+.resizer:hover,.resizer.active { background:var(--glass-accent); width:3px; }
+.resizer:hover::after,.resizer.active::after { display:none; }
+
+.collapse-btn, .expand-btn { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border:none; border-radius:50%; background:transparent; color:var(--label-tertiary); cursor:pointer; font-size:14px; line-height:1; transition:all 0.15s; flex-shrink:0; }
+.collapse-btn:hover, .expand-btn:hover { background:var(--fill-primary); color:var(--label-primary); }
+.collapsed-strip { display:none; height:100%; backdrop-filter:var(--thin-blur); -webkit-backdrop-filter:var(--thin-blur); background:var(--thin-bg); border:var(--thin-border); border-radius:var(--r-lg); flex-direction:column; align-items:center; justify-content:flex-start; padding-top:16px; overflow:hidden; }
+.left-sidebar, .right-panel { position:relative; backdrop-filter:var(--lg-blur); -webkit-backdrop-filter:var(--lg-blur); background:var(--lg-glass-bg); border:var(--lg-glass-border); box-shadow:var(--lg-shadow); display:flex; flex-direction:column; overflow:hidden; transition:width 0.25s ease; }
+.left-sidebar { border-right:var(--lg-glass-border); }
+.right-panel { border-left:var(--lg-glass-border); }
+.left-sidebar.collapsed .sidebar-inner, .right-panel.collapsed .panel-inner { display:none; }
+.left-sidebar.collapsed .collapsed-strip, .right-panel.collapsed .collapsed-strip { display:flex; }
+.sidebar-inner, .panel-inner { display:flex; flex-direction:column; height:100%; overflow:hidden; }
+.sidebar-header { display:flex; flex-direction:column; padding:16px; border-bottom:1px solid var(--fill-primary); flex-shrink:0; min-height:60px; }
+.sidebar-brand-row { display:flex; align-items:center; justify-content:space-between; }
+.sidebar-brand { font-size:16px; font-weight:700; color:var(--label-primary); line-height:1.3; }
+.sidebar-nav { flex:1; overflow-y:auto; padding:8px; }
+.nav-item { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border:none; border-radius:var(--r-sm); background:transparent; color:var(--label-secondary); font-size:14px; font-family:inherit; cursor:pointer; transition:all 0.15s; text-align:left; margin-bottom:2px; }
+.nav-item:hover { background:linear-gradient(145deg, var(--page-bg), var(--page-bg2)); color:var(--label-primary); }
+.nav-item.active { backdrop-filter:var(--thick-blur); -webkit-backdrop-filter:var(--thick-blur); background:var(--thick-bg); border:var(--thick-border); color:var(--glass-accent-text); font-weight:700; border-left:3px solid var(--glass-accent); border-radius:0 var(--r-sm) var(--r-sm) 0; padding-left:9px; box-shadow:var(--thin-shadow); }
+.nav-icon { font-size:18px; width:24px; text-align:center; flex-shrink:0; }
+.nav-label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidebar-footer { padding:12px; border-top:1px solid var(--fill-primary); border-radius:var(--r-lg); backdrop-filter:var(--thick-blur); -webkit-backdrop-filter:var(--thick-blur); background:var(--thick-bg); border:var(--thick-border); margin:4px 8px 8px; flex-shrink:0; display:flex; gap:6px; align-items:center; }
+.sidebar-footer-btn { width:32px; height:32px; border-radius:50%; border:var(--clear-border); backdrop-filter:var(--clear-blur); -webkit-backdrop-filter:var(--clear-blur); background:var(--clear-bg); color:var(--label-secondary); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.sidebar-footer-btn:hover { background:linear-gradient(145deg, var(--page-bg), var(--page-bg2)); color:var(--label-primary); }
+
+.center-content { display:flex; flex-direction:column; overflow:hidden; background:linear-gradient(145deg, var(--page-bg), var(--page-bg2)); }
+.center-header { padding:16px 24px; backdrop-filter:var(--thin-blur); -webkit-backdrop-filter:var(--thin-blur); background:var(--thin-bg); border-bottom:var(--thin-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; height:60px; }
+.center-title { font-size:16px; font-weight:700; color:var(--label-primary); margin:0; line-height:1.3; }
+.center-actions { display:flex; gap:8px; align-items:center; }
+.center-body { flex:1; overflow-y:auto; padding:16px 24px; }
+
+.right-panel .panel-placeholder { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:40px 24px; }
+.panel-placeholder-icon { font-size:48px; opacity:0.3; }
+.panel-placeholder-text { font-size:14px; color:var(--label-tertiary); text-align:center; line-height:1.6; }
+.panel-detail { flex:1; overflow-y:auto; padding:20px; }
+.panel-detail-header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:8px; }
+.panel-detail-header-left { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+.panel-detail-module-icon { font-size:24px; flex-shrink:0; }
+.panel-detail-title { font-size:16px; font-weight:700; color:var(--label-primary); flex:1; min-width:0; word-break:break-all; }
+.panel-detail-close { background:none; border:none; font-size:20px; color:var(--label-tertiary); cursor:pointer; padding:4px; line-height:1; border-radius:4px; flex-shrink:0; margin-left:8px; }
+.panel-detail-close:hover { color:var(--label-primary); background:linear-gradient(145deg, var(--page-bg), var(--page-bg2)); }
+.panel-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.panel-detail-grid-item { display:flex; flex-direction:column; }
+.panel-detail-label { font-size:11px; font-weight:600; color:var(--label-tertiary); text-transform:uppercase; letter-spacing:0.5px; }
+.panel-detail-value { font-size:14px; color:var(--label-primary); line-height:1.6; word-break:break-all; }
+
+.module-cards { display:flex; flex-direction:column; gap:10px; }
+.module-card { background:var(--thin-bg); border:var(--thin-border); border-radius:var(--r-md); padding:14px 16px; cursor:pointer; transition:all var(--dur) var(--ease); box-shadow:var(--thin-shadow); }
+.module-card:hover { border:var(--thick-border); box-shadow:var(--regular-shadow); transform:translateY(-2px); }
+.module-card-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.module-card-title { font-size:14px; font-weight:600; color:var(--label-primary); flex:1; min-width:0; line-height:1.4; word-break:break-all; }
+.module-card-meta { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--label-secondary); flex-wrap:wrap; }
+.module-card-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px; }
+.module-card-footer-left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--label-secondary); }
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:4px; padding:7px 16px; border:var(--clear-border); border-radius:var(--r-xl); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all var(--dur) var(--ease); backdrop-filter:var(--clear-blur); -webkit-backdrop-filter:var(--clear-blur); background:var(--clear-bg); color:var(--label-primary); box-shadow:var(--clear-shadow); white-space:nowrap; }
+.btn:hover { background:linear-gradient(145deg, var(--page-bg), var(--page-bg2)); color:var(--label-primary); }
+.btn-primary { backdrop-filter:var(--thick-blur); -webkit-backdrop-filter:var(--thick-blur); background:var(--accent-soft); color:var(--glass-accent-text); border:1px solid var(--glass-accent); box-shadow:0 1px 3px rgba(95,103,117,0.08); }
+.btn-primary:hover { background:var(--accent-soft); box-shadow:0 2px 12px rgba(95,103,117,0.15); color:var(--glass-accent-text); transform:translateY(-1px); }
+.btn-success { backdrop-filter:var(--thick-blur); -webkit-backdrop-filter:var(--thick-blur); background:rgba(52,199,89,0.08); color:var(--glass-green); border:1px solid rgba(52,199,89,0.15); }
+.btn-success:hover { background:rgba(52,199,89,0.15); box-shadow:0 2px 12px rgba(52,199,89,0.15); color:var(--glass-green); }
+.btn-danger { backdrop-filter:var(--thick-blur); -webkit-backdrop-filter:var(--thick-blur); background:rgba(255,69,58,0.08); color:var(--glass-red); border:1px solid rgba(255,69,58,0.15); }
+.btn-danger:hover { background:rgba(255,69,58,0.15); box-shadow:0 2px 12px rgba(255,69,58,0.15); color:var(--glass-red); }
+.btn-outline { backdrop-filter:var(--clear-blur); -webkit-backdrop-filter:var(--clear-blur); background:var(--clear-bg); border:var(--clear-border); color:var(--label-secondary); }
+.btn-outline:hover { background:linear-gradient(145deg, var(--page-bg), var(--page-bg2)); color:var(--label-primary); }
+.btn-sm { padding:4px 10px; font-size:12px; }
+.btn-xs { padding:2px 8px; font-size:11px; }
+
+.form-group { margin-bottom:14px; }
+.form-group label { display:block; font-size:12px; color:var(--label-secondary); margin-bottom:4px; font-weight:500; }
+.form-row { display:flex; gap:12px; }
+.form-row .form-group { flex:1; }
+input, select, textarea { width:100%; padding:8px 12px; background:var(--fill-secondary); border:1px solid var(--fill-primary); border-radius:var(--r-sm); color:var(--label-primary); font-size:13px; font-family:inherit; outline:none; transition:border-color 0.2s, box-shadow 0.2s; }
+input:focus, select:focus, textarea:focus { border-color:var(--glass-accent); box-shadow:0 0 0 3px rgba(95,103,117,0.12); }
+textarea { resize:vertical; min-height:60px; }
+
+.toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+.toolbar-left, .toolbar-right { display:flex; gap:8px; align-items:center; }
+.search-input { width:200px; padding:7px 12px; background:var(--thin-bg); border:1px solid var(--fill-primary); border-radius:var(--r-sm); font-size:13px; color:var(--label-primary); outline:none; transition:border-color 0.2s; font-family:inherit; }
+.search-input:focus { border-color:var(--glass-accent); box-shadow:0 0 0 3px rgba(95,103,117,0.12); }
+
+.modal-overlay { display:none; position:fixed; inset:0; background:var(--modal-overlay-bg); z-index:1000; align-items:center; justify-content:center; overflow-y:auto; padding:20px; }
+.modal-overlay.active { display:flex; }
+.modal { background:var(--thin-bg); backdrop-filter:var(--thin-blur); -webkit-backdrop-filter:var(--thin-blur); border:var(--thin-border); border-radius:var(--r-2xl); padding:24px; position:relative; width:100%; max-width:720px; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow-md); }
+.modal h2 { font-size:16px; font-weight:700; color:var(--label-primary); margin-bottom:16px; }
+.modal-close-btn { position:absolute; top:12px; right:12px; background:none; border:none; font-size:18px; color:var(--label-tertiary); cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.15s, color 0.15s; }
+.modal-close-btn:hover { background:var(--fill-primary); color:var(--label-primary); }
+.modal-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; margin-top:16px; }
+
+.upload-zone { border:2px dashed var(--fill-primary); border-radius:var(--r-sm); padding:16px; text-align:center; color:var(--label-tertiary); font-size:12px; cursor:pointer; transition:all 0.2s; margin-top:6px; }
+.upload-zone:hover { border-color:var(--glass-accent); color:var(--glass-accent); background:var(--accent-soft); }
+.file-item { display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:var(--fill-secondary); border-radius:var(--r-sm); margin-bottom:4px; font-size:12px; }
+.file-item .file-info { flex:1; display:flex; align-items:center; gap:6px; overflow:hidden; }
+.file-item .file-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.file-item .file-size { color:var(--label-tertiary); font-size:10px; flex-shrink:0; }
+.file-actions { display:flex; gap:3px; flex-shrink:0; }
+
+.stats { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.stat-card { background:var(--thin-bg); border:1px solid var(--fill-primary); border-radius:var(--r-sm); padding:12px 16px; box-shadow:var(--shadow-sm); flex:1; min-width:80px; }
+.stat-num { font-size:24px; font-weight:700; color:var(--label-primary); }
+.stat-label { font-size:11px; color:var(--label-tertiary); margin-top:2px; }
+
+.empty-state { text-align:center; padding:48px 24px; color:var(--label-tertiary); }
+.empty-state .icon { font-size:40px; margin-bottom:12px; opacity:0.5; }
+.empty-state p { font-size:14px; }
+
+.llm-config-tag { display:inline-flex; align-items:center; gap:2px; padding:4px 10px; font-size:12px; border-radius:16px; border:1px solid var(--fill-primary); background:var(--thin-bg); color:var(--label-secondary); cursor:pointer; user-select:none; transition:all 0.15s; line-height:1.3; }
+.llm-config-tag:hover { border-color:var(--glass-accent); color:var(--glass-accent); }
+.llm-config-tag.active { background:var(--glass-accent); color:#fff; border-color:var(--glass-accent); font-weight:600; }
+.llm-config-tag.add-tag { border-style:dashed; color:var(--label-tertiary); }
+.llm-config-tag.add-tag:hover { border-color:var(--glass-accent); color:var(--glass-accent); }
+
+.ai-analysis-box { background:linear-gradient(145deg, var(--thin-bg), var(--page-bg)); border:1px solid var(--glass-accent); border-radius:var(--r-lg); padding:20px; margin-top:16px; white-space:pre-wrap; font-size:14px; line-height:1.8; color:var(--label-primary); max-height:400px; overflow-y:auto; }
+.ai-analysis-box h4 { margin-top:12px; margin-bottom:6px; color:var(--glass-accent); font-weight:600; }
+
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border-medium); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--label-tertiary); }
+
+body.dark {
+  --page-bg: #101018; --page-bg2: #181828;
+  --modal-overlay-bg: rgba(0,0,0,0.40);
+  --lg-glass-bg: rgba(20,20,36,0.55);
+  --lg-glass-border: 1px solid rgba(255,255,255,0.06);
+  --thin-bg: rgba(30,30,50,0.40);
+  --thin-border: 1px solid rgba(255,255,255,0.05);
+  --regular-bg: rgba(32,32,52,0.48);
+  --regular-border: 1px solid rgba(255,255,255,0.06);
+  --clear-bg: rgba(255,255,255,0.05);
+  --clear-border: 1px solid rgba(255,255,255,0.08);
+  --thick-bg: rgba(46,46,66,0.55);
+  --thick-border: 1px solid rgba(255,255,255,0.09);
+  --glass-accent: #8a92a3;
+  --accent-soft: rgba(138,146,163,0.14);
+  --glass-accent-text: #9ca4b3;
+  --label-primary: rgba(255,255,255,0.95);
+  --label-secondary: rgba(255,255,255,0.70);
+  --label-tertiary: rgba(255,255,255,0.50);
+  --fill-primary: rgba(255,255,255,0.10);
+  --fill-secondary: rgba(255,255,255,0.07);
+  --border-medium: rgba(255,255,255,0.12);
+}
+body.dark .btn-primary { border-color:var(--glass-accent); }
+</style>
+</head>
+<body class="light">
+<div class="app">
+  <!-- 左侧栏 -->
+  <aside class="left-sidebar">
+    <div class="collapsed-strip"><button class="expand-btn" onclick="togglePanel('left')">→</button></div>
+    <div class="sidebar-inner">
+      <div class="sidebar-header">
+        <div class="sidebar-brand-row">
+          <div class="sidebar-brand">👶 婴儿管家</div>
+          <button class="collapse-btn" onclick="togglePanel('left')">←</button>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">仪表盘</span></button>
+        <button class="nav-item" data-tab="feeding" onclick="switchTab('feeding')"><span class="nav-icon">🍼</span><span class="nav-label">喂养记录</span></button>
+        <button class="nav-item" data-tab="sleep" onclick="switchTab('sleep')"><span class="nav-icon">😴</span><span class="nav-label">睡眠记录</span></button>
+        <button class="nav-item" data-tab="diaper" onclick="switchTab('diaper')"><span class="nav-icon">🧷</span><span class="nav-label">换尿布</span></button>
+        <button class="nav-item" data-tab="temperature" onclick="switchTab('temperature')"><span class="nav-icon">🌡️</span><span class="nav-label">体温记录</span></button>
+        <button class="nav-item" data-tab="growth" onclick="switchTab('growth')"><span class="nav-icon">📏</span><span class="nav-label">身高体重</span></button>
+        <button class="nav-item" data-tab="vaccine" onclick="switchTab('vaccine')"><span class="nav-icon">💉</span><span class="nav-label">疫苗记录</span></button>
+        <button class="nav-item" data-tab="milestone" onclick="switchTab('milestone')"><span class="nav-icon">🌟</span><span class="nav-label">里程碑</span></button>
+        <button class="nav-item" data-tab="stats" onclick="switchTab('stats')"><span class="nav-icon">📈</span><span class="nav-label">统计图表</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="sidebar-footer-btn" onclick="toggleTheme()" title="切换主题">🌙</button>
+        <button class="sidebar-footer-btn" onclick="openMigrationModal()" title="数据迁移">📦</button>
+        <button class="sidebar-footer-btn" onclick="openLLMConfig()" title="大模型配置">🤖</button>
+        <span style="flex:1;font-size:11px;color:var(--label-tertiary);text-align:right;" id="storageWidget">📁 0</span>
+      </div>
+    </div>
+  </aside>
+  <div class="resizer" id="resizerLeft"></div>
+
+  <!-- 中间栏 -->
+  <main class="center-content">
+    <div class="center-header">
+      <h2 class="center-title" id="centerTitle">仪表盘</h2>
+      <div class="center-actions" id="centerActions">
+        <button class="btn btn-primary" onclick="openEditModal()">＋ 新建记录</button>
+      </div>
+    </div>
+    <div class="center-body">
+      <div class="stats" id="stats"></div>
+      <div id="pageContainer"></div>
+    </div>
+  </main>
+  <div class="resizer" id="resizerRight"></div>
+
+  <!-- 右侧栏 -->
+  <aside class="right-panel" id="rightPanel">
+    <div class="collapsed-strip"><button class="expand-btn" onclick="togglePanel('right')">←</button></div>
+    <div class="panel-inner">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--fill-primary);flex-shrink:0;min-height:60px;">
+        <span style="font-size:16px;font-weight:700;color:var(--label-primary);">详情</span>
+        <button class="collapse-btn" onclick="togglePanel('right')">→</button>
+      </div>
+      <div class="panel-placeholder" id="panelPlaceholder">
+        <div class="panel-placeholder-icon">👶</div>
+        <div class="panel-placeholder-text">从列表中选择一条记录查看详情</div>
+      </div>
+      <div class="panel-detail" id="panelDetail" style="display:none;"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2 id="editModalTitle">新建记录</h2>
+    <button class="modal-close-btn" onclick="closeEditModal()">✕</button>
+    <input type="hidden" id="editId">
+    <input type="hidden" id="editModule">
+    <div id="editForm"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeEditModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 数据迁移弹窗 -->
+<div class="modal-overlay" id="migrationModal" onclick="if(event.target===this)closeMigrationModal()">
+  <div class="modal" style="max-width:500px;">
+    <h2>📦 数据迁移</h2>
+    <button class="modal-close-btn" onclick="closeMigrationModal()">✕</button>
+    <p style="font-size:13px;color:var(--label-secondary);margin-bottom:16px;">导出全部数据（含附件）为 JSON，或导入备份。</p>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="exportAllData()">📤 导出</button>
+      <button class="btn btn-success" onclick="document.getElementById('importFileInput').click()">📥 导入</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importAllData(this.files[0])">
+    </div>
+    <div id="migrationProgress" style="display:none;font-size:12px;color:var(--label-tertiary);"></div>
+  </div>
+</div>
+
+<!-- 大模型配置弹窗 -->
+<div class="modal-overlay" id="llmConfigModal" onclick="if(event.target===this)closeLLMConfig()">
+  <div class="modal" style="max-width:640px;max-height:80vh;overflow-y:auto;">
+    <h2 style="margin-bottom:4px;">🤖 大模型连接配置</h2>
+    <div style="font-size:12px;color:var(--label-tertiary);margin-bottom:14px;">用于 AI 睡眠分析。支持 DeepSeek / 智谱 GLM / Ollama / SiliconFlow 等</div>
+    <div id="llmConfigList" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+    <input type="hidden" id="llmConfigId">
+    <div class="form-group"><label>配置名称</label><input type="text" id="llmConfigName" placeholder="如: DeepSeek、本地 Ollama" autocomplete="off"></div>
+    <div class="form-group"><label>API 地址</label><input type="text" id="llmEndpoint" placeholder="https://api.deepseek.com" autocomplete="off"></div>
+    <div class="form-group" style="position:relative;">
+      <label>API Key</label>
+      <input type="password" id="llmApiKey" placeholder="sk-..." style="padding-right:32px;" autocomplete="off">
+      <button onclick="toggleApiKeyVisible()" style="position:absolute;right:8px;bottom:8px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--label-tertiary);padding:2px 4px;" type="button">👁</button>
+    </div>
+    <div class="form-group"><label>模型名称</label><input type="text" id="llmModel" placeholder="deepseek-chat / glm-4-flash / qwen3:4b" autocomplete="off"></div>
+    <div id="llmTestResult" style="margin-bottom:10px;font-size:12px;"></div>
+    <div class="form-row" style="justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="testLLMConnection()">测试连接</button>
+        <button class="btn btn-outline btn-sm" onclick="deleteLLMConfig()" id="deleteConfigBtn" style="color:var(--glass-red);border-color:var(--glass-red);display:none;">删除</button>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="closeLLMConfig()">取消</button>
+        <button class="btn btn-primary btn-sm" onclick="saveLLMConfig()">保存配置</button>
+      </div>
+    </div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--fill-primary);font-size:11px;color:var(--label-tertiary);">
+      <details><summary style="cursor:pointer;font-weight:600;color:var(--label-primary);">📖 配置说明</summary>
+        <div style="line-height:1.8;margin-top:6px;">
+          <p><b>DeepSeek</b>：<code>https://api.deepseek.com</code>，模型 <code>deepseek-chat</code></p>
+          <p><b>智谱 GLM</b>：<code>https://open.bigmodel.cn/api/paas/v4</code>，模型 <code>glm-4-flash</code></p>
+          <p><b>Ollama 本地</b>：<code>http://localhost:11434</code>，模型 <code>qwen3:4b</code>（无需 Key）</p>
+          <p><b>SiliconFlow</b>：<code>https://api.siliconflow.cn</code>，模型 <code>deepseek-ai/DeepSeek-V3</code></p>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 🔥 第一步：彻底隔离旧版缓存（升级版04）
+// ============================================================
+(function cleanLegacyCache() {
+  const legacyKeys = [
+    'work_tasks_data', 'work_meetings_data', 'work_documents_data', 
+    'work_researches_data', 'work_seals_data', 'work_materials_data',
+    'work_assigners', 'work_partner_groups', 'work_categories',
+    'work_task_theme', 'llm_config', 'llm_configs_v2'
+  ];
+  let found = 0;
+  legacyKeys.forEach(key => {
+    if (localStorage.getItem(key) !== null) {
+      found++;
+      // 只记录，不删除（防止误删用户旧版数据）。但婴儿版绝对不会读取它们。
+      console.warn(`[婴儿管家] 检测到旧版缓存键 "${key}"，已自动忽略隔离。`);
+    }
+  });
+  if (found > 0) {
+    console.log(`[婴儿管家] ✅ 已隔离 ${found} 个旧版缓存键，当前会话完全独立。`);
+  }
+  // 强制重写存储前缀，确保所有数据都使用 baby_ 开头
+  // 此操作由下方 MODULES 中的 key 保证
+})();
+
+// ============ 数据层 ============
+const DB_NAME = 'babycare_db';
+const STORE_NAME = 'files';
+const CONFIG_STORE = 'config';
+const LLM_CONFIGS_KEY = 'llm_configs_baby';
+
+const MODULES = {
+  feeding: { key: 'baby_feeding', label: '喂养' },
+  sleep: { key: 'baby_sleep', label: '睡眠' },
+  diaper: { key: 'baby_diaper', label: '尿布' },
+  temperature: { key: 'baby_temp', label: '体温' },
+  growth: { key: 'baby_growth', label: '身高体重' },
+  vaccine: { key: 'baby_vaccine', label: '疫苗' },
+  milestone: { key: 'baby_milestone', label: '里程碑' }
+};
+
+function loadData(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch(e) { return []; } }
+function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+function genId() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      if (!db.objectStoreNames.contains(CONFIG_STORE)) db.createObjectStore(CONFIG_STORE, { keyPath: 'id' });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbPut(data) {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const req = tx.objectStore(STORE_NAME).put(data);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbGet(id) {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbDelete(id) {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const req = tx.objectStore(STORE_NAME).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbGetAll() {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbClear() {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const req = tx.objectStore(STORE_NAME).clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbPutConfig(id, data) {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(CONFIG_STORE, 'readwrite');
+    const req = tx.objectStore(CONFIG_STORE).put({ id, data });
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbGetConfig(id) {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(CONFIG_STORE, 'readonly');
+    const req = tx.objectStore(CONFIG_STORE).get(id);
+    req.onsuccess = () => resolve(req.result ? req.result.data : null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// ============ 主题 ============
+function setTheme(name) {
+  document.body.className = name;
+  localStorage.setItem('baby_theme', name);
+  const btn = document.querySelector('.sidebar-footer-btn');
+  if (btn && btn.textContent.includes('🌙')) btn.textContent = name === 'light' ? '🌙' : '☀';
+}
+function toggleTheme() {
+  const current = localStorage.getItem('baby_theme') || 'light';
+  setTheme(current === 'light' ? 'dark' : 'light');
+}
+(function initTheme() {
+  const saved = localStorage.getItem('baby_theme') || 'light';
+  setTheme(saved);
+})();
+
+// ============ 状态 ============
+let currentTab = 'dashboard';
+let currentRecordId = null;
+let editingModule = '';
+let tempFiles = [];
+
+// ============ 页面渲染 ============
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const nav = document.querySelector(`.nav-item[data-tab="${tab}"]`);
+  if (nav) nav.classList.add('active');
+
+  const titles = {
+    dashboard: '仪表盘', feeding: '🍼 喂养记录', sleep: '😴 睡眠记录',
+    diaper: '🧷 换尿布', temperature: '🌡️ 体温记录', growth: '📏 身高体重',
+    vaccine: '💉 疫苗记录', milestone: '🌟 里程碑', stats: '📈 统计图表'
+  };
+  document.getElementById('centerTitle').textContent = titles[tab] || '婴儿管家';
+  const actions = document.getElementById('centerActions');
+  if (tab === 'dashboard' || tab === 'stats') actions.innerHTML = '';
+  else actions.innerHTML = `<button class="btn btn-primary" onclick="openEditModal('${tab}')">＋ 新建记录</button>`;
+
+  const statsDiv = document.getElementById('stats');
+  if (tab === 'dashboard') { renderDashboardStats(); statsDiv.style.display = 'flex'; }
+  else statsDiv.style.display = 'none';
+
+  const container = document.getElementById('pageContainer');
+  if (tab === 'dashboard') renderDashboard(container);
+  else if (tab === 'stats') renderStats(container);
+  else renderList(tab, container);
+  closePanelDetail();
+}
+
+function renderDashboardStats() {
+  const statsDiv = document.getElementById('stats');
+  const counts = {};
+  for (const [mod, cfg] of Object.entries(MODULES)) counts[mod] = loadData(cfg.key).length;
+  statsDiv.innerHTML = `
+    <div class="stat-card"><div class="stat-num">${counts.feeding||0}</div><div class="stat-label">🍼 喂养</div></div>
+    <div class="stat-card"><div class="stat-num">${counts.sleep||0}</div><div class="stat-label">😴 睡眠</div></div>
+    <div class="stat-card"><div class="stat-num">${counts.diaper||0}</div><div class="stat-label">🧷 尿布</div></div>
+    <div class="stat-card"><div class="stat-num">${counts.temperature||0}</div><div class="stat-label">🌡️ 体温</div></div>
+    <div class="stat-card"><div class="stat-num">${counts.growth||0}</div><div class="stat-label">📏 生长</div></div>
+    <div class="stat-card"><div class="stat-num">${counts.vaccine||0}</div><div class="stat-label">💉 疫苗</div></div>
+    <div class="stat-card"><div class="stat-num">${counts.milestone||0}</div><div class="stat-label">🌟 里程碑</div></div>
+  `;
+}
+function renderDashboard(container) {
+  const recent = [];
+  for (const [mod, cfg] of Object.entries(MODULES)) {
+    loadData(cfg.key).forEach(item => {
+      recent.push({ module: mod, label: cfg.label, item, datetime: item.datetime || item.date || '' });
+    });
+  }
+  recent.sort((a,b) => (b.datetime||'').localeCompare(a.datetime||''));
+  const latest = recent.slice(0, 10);
+  let html = `<div style="margin-bottom:12px;"><h3 style="font-size:14px;font-weight:600;color:var(--label-secondary);">📋 最近活动</h3></div>`;
+  if (!latest.length) html += `<div class="empty-state"><div class="icon">👶</div><p>还没有记录，开始添加吧！</p></div>`;
+  else {
+    html += `<div class="module-cards">`;
+    latest.forEach(entry => {
+      const item = entry.item;
+      const title = item.title || item.name || item.milestone || item.vaccine_name || item.type || '记录';
+      const time = entry.datetime || item.date || '';
+      html += `<div class="module-card" onclick="showDetail('${entry.module}','${item.id}')">
+        <div class="module-card-header"><div class="module-card-title">[${entry.label}] ${title}</div></div>
+        <div class="module-card-footer"><div class="module-card-footer-left">${time}</div></div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function renderList(module, container) {
+  const cfg = MODULES[module];
+  if (!cfg) return;
+  const data = loadData(cfg.key).sort((a,b) => (b.datetime||'').localeCompare(a.datetime||''));
+  let html = `<div class="toolbar"><div class="toolbar-left"><input type="text" class="search-input" id="searchInput_${module}" placeholder="搜索..." oninput="filterList('${module}')" autocomplete="off"></div></div>`;
+  if (!data.length) html += `<div class="empty-state"><div class="icon">📭</div><p>暂无记录</p></div>`;
+  else {
+    html += `<div class="module-cards" id="listContainer_${module}">`;
+    data.forEach(item => {
+      const title = item.title || item.name || item.milestone || item.vaccine_name || item.type || '记录';
+      const time = item.datetime || item.date || '';
+      html += `<div class="module-card" onclick="showDetail('${module}','${item.id}')" data-search="${title} ${time}">
+        <div class="module-card-header"><div class="module-card-title">${title}</div></div>
+        <div class="module-card-footer">
+          <div class="module-card-footer-left">${time}</div>
+          <div class="file-actions" onclick="event.stopPropagation();">
+            <button class="btn btn-outline btn-xs" onclick="openEditModal('${module}','${item.id}')">编辑</button>
+            <button class="btn btn-danger btn-xs" onclick="deleteRecord('${module}','${item.id}')">删除</button>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+function filterList(module) {
+  const input = document.getElementById(`searchInput_${module}`);
+  if (!input) return;
+  const q = input.value.toLowerCase().trim();
+  document.querySelectorAll(`#listContainer_${module} .module-card`).forEach(card => {
+    card.style.display = (!q || (card.dataset.search||'').toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+function showDetail(module, id) {
+  currentRecordId = id;
+  const cfg = MODULES[module];
+  const data = loadData(cfg.key);
+  const item = data.find(d => d.id === id);
+  if (!item) return;
+  document.getElementById('panelPlaceholder').style.display = 'none';
+  document.getElementById('panelDetail').style.display = 'block';
+  let html = `<div class="panel-detail-header-row"><div class="panel-detail-header-left"><span class="panel-detail-module-icon">${cfg.label}</span><div class="panel-detail-title">${item.title || item.name || item.milestone || item.vaccine_name || item.type || '记录'}</div></div><button class="panel-detail-close" onclick="closePanelDetail()">✕</button></div>`;
+  html += `<div class="panel-detail-grid">`;
+  const fields = [];
+  for (const [key, val] of Object.entries(item)) {
+    if (key === 'id' || key === 'files' || key === 'datetime') continue;
+    if (val !== undefined && val !== null && val !== '') fields.push({ label: key, value: val });
+  }
+  if (item.datetime) fields.unshift({ label: '时间', value: item.datetime });
+  fields.forEach(f => { html += `<div class="panel-detail-grid-item"><div class="panel-detail-label">${f.label}</div><div class="panel-detail-value">${f.value}</div></div>`; });
+  html += `</div>`;
+  if (item.files && item.files.length) {
+    html += `<div style="margin-top:12px;"><div class="panel-detail-label">附件 (${item.files.length})</div><div id="detailFileList"></div></div>`;
+  }
+  html += `<div style="margin-top:16px;display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="openEditModal('${module}','${id}')">编辑</button><button class="btn btn-danger btn-sm" onclick="deleteRecord('${module}','${id}')">删除</button></div>`;
+  document.getElementById('panelDetail').innerHTML = html;
+  if (item.files) renderDetailFiles(item.files);
+}
+async function renderDetailFiles(fileIds) {
+  const container = document.getElementById('detailFileList');
+  if (!container) return;
+  let html = '';
+  for (const fid of fileIds) {
+    const f = await dbGet(fid);
+    if (!f) continue;
+    html += `<div class="file-item"><div class="file-info"><span class="file-icon">📄</span><span class="file-name">${f.name}</span><span class="file-size">${(f.size/1024).toFixed(1)}KB</span></div><div class="file-actions"><button class="btn btn-outline btn-xs" onclick="previewFile('${fid}')">预览</button><button class="btn btn-outline btn-xs" onclick="downloadFile('${fid}')">下载</button></div></div>`;
+  }
+  container.innerHTML = html;
+}
+function closePanelDetail() {
+  document.getElementById('panelPlaceholder').style.display = '';
+  document.getElementById('panelDetail').style.display = 'none';
+  currentRecordId = null;
+}
+
+// ============ 编辑弹窗（🔥 彻底隔离自动填充） ============
+function openEditModal(module, id) {
+  if (!module && currentTab && MODULES[currentTab]) module = currentTab;
+  else if (!module) module = 'feeding';
+  editingModule = module;
+  const cfg = MODULES[module];
+  const isEdit = !!id;
+  document.getElementById('editModule').value = module;
+  document.getElementById('editId').value = id || '';
+  document.getElementById('editModalTitle').textContent = isEdit ? `编辑${cfg.label}记录` : `新建${cfg.label}记录`;
+  const form = document.getElementById('editForm');
+  
+  // 🔥 关键：所有输入框强制 autocomplete="off"，并加入随机 name 属性防止浏览器关联
+  const randSuffix = '_' + Date.now().toString(36);
+  let html = `<div class="form-group"><label>时间</label><input type="datetime-local" id="edit_datetime" value="${isEdit ? (loadData(cfg.key).find(d=>d.id===id)?.datetime||'') : ''}" autocomplete="off" name="baby_dt${randSuffix}"></div>`;
+  
+  const fieldsMap = {
+    feeding: [{ id:'edit_type',label:'类型',type:'select',options:['母乳','配方奶','辅食']},{ id:'edit_amount',label:'量 (ml或克)',type:'number'},{ id:'edit_note',label:'备注',type:'textarea'}],
+    sleep: [{ id:'edit_duration',label:'时长 (分钟)',type:'number'},{ id:'edit_quality',label:'睡眠质量',type:'select',options:['好','一般','差']},{ id:'edit_note',label:'备注',type:'textarea'}],
+    diaper: [{ id:'edit_type',label:'类型',type:'select',options:['小便','大便','混合']},{ id:'edit_note',label:'备注',type:'textarea'}],
+    temperature: [{ id:'edit_temp',label:'体温 (℃)',type:'number'},{ id:'edit_location',label:'测量部位',type:'select',options:['腋下','口腔','肛门']},{ id:'edit_note',label:'备注',type:'textarea'}],
+    growth: [{ id:'edit_height',label:'身高 (cm)',type:'number'},{ id:'edit_weight',label:'体重 (kg)',type:'number'},{ id:'edit_head',label:'头围 (cm)',type:'number'},{ id:'edit_note',label:'备注',type:'textarea'}],
+    vaccine: [{ id:'edit_vaccine_name',label:'疫苗名称',type:'text'},{ id:'edit_site',label:'接种部位',type:'text'},{ id:'edit_reaction',label:'反应',type:'text'},{ id:'edit_note',label:'备注',type:'textarea'}],
+    milestone: [{ id:'edit_milestone',label:'里程碑事件',type:'text'},{ id:'edit_desc',label:'描述',type:'textarea'},{ id:'edit_note',label:'备注',type:'textarea'}]
+  };
+  const fNames = fieldsMap[module] || [];
+  fNames.forEach(f => {
+    let val = '';
+    if (isEdit) { const item = loadData(cfg.key).find(d => d.id === id); if (item) val = item[f.id.replace('edit_', '')] || ''; }
+    const fieldId = f.id;
+    if (f.type === 'select') {
+      html += `<div class="form-group"><label>${f.label}</label><select id="${fieldId}" autocomplete="off" name="baby_sel_${fieldId}${randSuffix}">`;
+      f.options.forEach(opt => { html += `<option value="${opt}" ${val===opt?'selected':''}>${opt}</option>`; });
+      html += `</select></div>`;
+    } else if (f.type === 'textarea') {
+      html += `<div class="form-group"><label>${f.label}</label><textarea id="${fieldId}" rows="2" autocomplete="off" name="baby_ta_${fieldId}${randSuffix}">${val}</textarea></div>`;
+    } else {
+      html += `<div class="form-group"><label>${f.label}</label><input type="${f.type}" id="${fieldId}" value="${val}" autocomplete="off" name="baby_inp_${fieldId}${randSuffix}">`;
+    }
+  });
+  
+  html += `<div class="form-group"><label>附件</label><div class="upload-zone" onclick="document.getElementById('editFileInput').click()" ondrop="handleDrop(event)" ondragover="event.preventDefault()">📎 点击或拖拽上传</div><input type="file" id="editFileInput" multiple style="display:none;" onchange="handleFileSelect(event)"><div id="editFileList"></div></div>`;
+  form.innerHTML = html;
+  tempFiles = [];
+  if (isEdit) {
+    const item = loadData(cfg.key).find(d => d.id === id);
+    if (item && item.files) {
+      (async () => { for (const fid of item.files) { const f = await dbGet(fid); if (f) tempFiles.push(f); } renderTempFiles(); })();
+    }
+  }
+  renderTempFiles();
+  document.getElementById('editModal').classList.add('active');
+}
+function closeEditModal() { document.getElementById('editModal').classList.remove('active'); tempFiles = []; }
+function renderTempFiles() {
+  const container = document.getElementById('editFileList');
+  if (!container) return;
+  if (!tempFiles.length) { container.innerHTML = ''; return; }
+  container.innerHTML = tempFiles.map((f, i) => `<div class="file-item"><div class="file-info"><span class="file-icon">📄</span><span class="file-name">${f.name}</span><span class="file-size">${(f.size/1024).toFixed(1)}KB</span></div><div class="file-actions"><button class="btn btn-danger btn-xs" onclick="removeTempFile(${i})">删除</button></div></div>`).join('');
+}
+function removeTempFile(idx) { if (confirm('移除该附件？')) { tempFiles.splice(idx,1); renderTempFiles(); } }
+function handleFileSelect(e) {
+  const files = e.target.files;
+  if (!files.length) return;
+  for (const file of files) {
+    if (file.size > 20*1024*1024) { alert(`文件 ${file.name} 超过20MB`); continue; }
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target.result;
+      const fileId = 'file_' + genId();
+      await dbPut({ id: fileId, name: file.name, size: file.size, type: file.type, data: dataUrl, uploadedAt: new Date().toISOString() });
+      tempFiles.push({ id: fileId, name: file.name, size: file.size, type: file.type, data: dataUrl });
+      renderTempFiles();
+    };
+    reader.readAsDataURL(file);
+  }
+  e.target.value = '';
+}
+function handleDrop(e) {
+  e.preventDefault();
+  const files = e.dataTransfer.files;
+  if (!files.length) return;
+  for (const file of files) {
+    if (file.size > 20*1024*1024) { alert(`文件 ${file.name} 超过20MB`); continue; }
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target.result;
+      const fileId = 'file_' + genId();
+      await dbPut({ id: fileId, name: file.name, size: file.size, type: file.type, data: dataUrl, uploadedAt: new Date().toISOString() });
+      tempFiles.push({ id: fileId, name: file.name, size: file.size, type: file.type, data: dataUrl });
+      renderTempFiles();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+async function saveRecord() {
+  const module = document.getElementById('editModule').value;
+  const id = document.getElementById('editId').value;
+  const cfg = MODULES[module];
+  const data = loadData(cfg.key);
+  const fieldsMap = {
+    feeding: ['type','amount','note'], sleep: ['duration','quality','note'], diaper: ['type','note'],
+    temperature: ['temp','location','note'], growth: ['height','weight','head','note'],
+    vaccine: ['vaccine_name','site','reaction','note'], milestone: ['milestone','desc','note']
+  };
+  const fNames = fieldsMap[module] || [];
+  const record = { id: id || genId() };
+  record.datetime = document.getElementById('edit_datetime').value || new Date().toISOString().slice(0,16);
+  fNames.forEach(f => { const el = document.getElementById(`edit_${f}`); if (el) record[f] = el.value; });
+  record.files = tempFiles.map(f => f.id);
+  if (id) { const idx = data.findIndex(d => d.id === id); if (idx !== -1) data[idx] = { ...data[idx], ...record }; }
+  else data.push(record);
+  saveData(cfg.key, data);
+  closeEditModal();
+  switchTab(currentTab);
+}
+async function deleteRecord(module, id) {
+  if (!confirm('确定删除？')) return;
+  const cfg = MODULES[module];
+  const data = loadData(cfg.key);
+  const item = data.find(d => d.id === id);
+  if (item && item.files) { for (const fid of item.files) await dbDelete(fid); }
+  saveData(cfg.key, data.filter(d => d.id !== id));
+  closePanelDetail();
+  switchTab(currentTab);
+}
+
+function previewFile(fileId) {
+  dbGet(fileId).then(f => {
+    if (!f) return;
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (['png','jpg','jpeg','gif','svg'].includes(ext)) {
+      const w = window.open('', '_blank');
+      w.document.write(`<img src="${f.data}" style="max-width:90vw;max-height:90vh;">`);
+    } else downloadFile(fileId);
+  });
+}
+function downloadFile(fileId) {
+  dbGet(fileId).then(f => { if (!f) return; const a = document.createElement('a'); a.href = f.data; a.download = f.name; a.click(); });
+}
+
+// ================================================================
+// 🤖 大模型引擎（完整保留）
+// ================================================================
+async function getAllLLMConfigs() {
+  let data = await dbGetConfig(LLM_CONFIGS_KEY);
+  if (!data) {
+    data = { active: 'llm_default', configs: [{ id: 'llm_default', name: '本地 Ollama', endpoint: 'http://localhost:11434', model: 'qwen3:4b', apiKey: '' }] };
+    await dbPutConfig(LLM_CONFIGS_KEY, data);
+  }
+  return data;
+}
+async function getLLMConfig() {
+  const all = await getAllLLMConfigs();
+  const active = all.configs.find(c => c.id === all.active);
+  return active || all.configs[0] || { endpoint: 'http://localhost:11434', model: 'qwen3:4b', apiKey: '' };
+}
+async function buildLLMHeaders() {
+  const config = await getLLMConfig();
+  const headers = { 'Content-Type': 'application/json' };
+  if (config.apiKey) headers['Authorization'] = 'Bearer ' + config.apiKey;
+  return headers;
+}
+
+async function openLLMConfig() {
+  await renderLLMConfigList();
+  document.getElementById('llmConfigModal').classList.add('active');
+}
+function closeLLMConfig() { document.getElementById('llmConfigModal').classList.remove('active'); }
+async function renderLLMConfigList() {
+  const all = await getAllLLMConfigs();
+  const listDiv = document.getElementById('llmConfigList');
+  if (!listDiv) return;
+  let html = '';
+  all.configs.forEach(c => {
+    const isActive = c.id === all.active;
+    html += `<span class="llm-config-tag${isActive ? ' active' : ''}" onclick="selectLLMConfig('${c.id}')">${isActive ? '● ' : ''}${c.name}</span>`;
+  });
+  html += `<span class="llm-config-tag add-tag" onclick="addNewLLMConfig()">＋ 新增</span>`;
+  listDiv.innerHTML = html;
+  const activeCfg = all.configs.find(c => c.id === all.active);
+  if (activeCfg) fillLLMConfigForm(activeCfg);
+  else fillLLMConfigFormEmpty();
+}
+function fillLLMConfigForm(cfg) {
+  document.getElementById('llmConfigId').value = cfg.id;
+  document.getElementById('llmConfigName').value = cfg.name;
+  document.getElementById('llmEndpoint').value = cfg.endpoint;
+  document.getElementById('llmModel').value = cfg.model;
+  document.getElementById('llmApiKey').value = cfg.apiKey || '';
+  document.getElementById('deleteConfigBtn').style.display = '';
+}
+function fillLLMConfigFormEmpty() {
+  document.getElementById('llmConfigId').value = '';
+  document.getElementById('llmConfigName').value = '';
+  document.getElementById('llmEndpoint').value = '';
+  document.getElementById('llmModel').value = '';
+  document.getElementById('llmApiKey').value = '';
+  document.getElementById('deleteConfigBtn').style.display = 'none';
+}
+async function selectLLMConfig(id) {
+  const all = await getAllLLMConfigs();
+  const cfg = all.configs.find(c => c.id === id);
+  if (cfg) fillLLMConfigForm(cfg);
+}
+function addNewLLMConfig() { fillLLMConfigFormEmpty(); document.getElementById('llmConfigName').focus(); }
+function toggleApiKeyVisible() {
+  const input = document.getElementById('llmApiKey');
+  const btn = document.getElementById('toggleKeyBtn');
+  if (!input) return;
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
+}
+async function saveLLMConfig() {
+  const id = document.getElementById('llmConfigId').value.trim();
+  const name = document.getElementById('llmConfigName').value.trim();
+  let endpoint = document.getElementById('llmEndpoint').value.trim();
+  const model = document.getElementById('llmModel').value.trim();
+  const apiKey = document.getElementById('llmApiKey').value.trim();
+  if (!name || !endpoint || !model) { alert('请填写完整信息'); return; }
+  if (endpoint.endsWith('/v1')) endpoint = endpoint.replace(/\/v1\/?$/, '');
+  if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1);
+  const all = await getAllLLMConfigs();
+  if (id) {
+    const idx = all.configs.findIndex(c => c.id === id);
+    if (idx !== -1) all.configs[idx] = { id, name, endpoint, model, apiKey };
+  } else {
+    const newId = 'llm_' + Date.now();
+    all.configs.push({ id: newId, name, endpoint, model, apiKey });
+    all.active = newId;
+  }
+  await dbPutConfig(LLM_CONFIGS_KEY, all);
+  closeLLMConfig();
+  alert('配置已保存');
+  checkLLMStatusUI();
+}
+async function deleteLLMConfig() {
+  const id = document.getElementById('llmConfigId').value.trim();
+  if (!id) return;
+  const all = await getAllLLMConfigs();
+  if (all.configs.length <= 1) { alert('至少保留一个配置'); return; }
+  if (!confirm('删除该配置？')) return;
+  all.configs = all.configs.filter(c => c.id !== id);
+  if (all.active === id) all.active = all.configs[0].id;
+  await dbPutConfig(LLM_CONFIGS_KEY, all);
+  closeLLMConfig();
+  alert('已删除');
+  checkLLMStatusUI();
+}
+async function testLLMConnection() {
+  const endpoint = document.getElementById('llmEndpoint').value.trim().replace(/\/v1\/?$/, '');
+  const model = document.getElementById('llmModel').value.trim();
+  const apiKey = document.getElementById('llmApiKey').value.trim();
+  const resultDiv = document.getElementById('llmTestResult');
+  if (!endpoint) { resultDiv.innerHTML = '<span style="color:var(--glass-red);">请填写 API 地址</span>'; return; }
+  resultDiv.innerHTML = '<span style="color:var(--label-tertiary);">检测中...</span>';
+  const headers = { 'Content-Type': 'application/json' };
+  if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
+  try {
+    const r = await fetch(endpoint + '/v1/models', { method: 'GET', headers });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const models = (data.data || []).map(m => m.id);
+    if (models.indexOf(model) >= 0) resultDiv.innerHTML = '<span style="color:var(--glass-green);">✅ 连接成功，模型就绪</span>';
+    else resultDiv.innerHTML = `<span style="color:var(--glass-orange);">⚠️ 服务已连接，但模型 "${model}" 未找到</span>`;
+  } catch(e) {
+    resultDiv.innerHTML = `<span style="color:var(--glass-red);">❌ 连接失败：${e.message}</span>`;
+  }
+}
+function checkLLMStatusUI() {
+  const dot = document.getElementById('llmStatusDot');
+  const text = document.getElementById('llmStatusText');
+  if (!dot || !text) return;
+  dot.style.background = '#fbbf24';
+  text.textContent = '检测中...';
+  getLLMConfig().then(config => {
+    buildLLMHeaders().then(headers => {
+      fetch(config.endpoint + '/v1/models', { method: 'GET', headers }).then(r => {
+        if (!r.ok) throw new Error('offline');
+        return r.json();
+      }).then(d => {
+        const models = (d.data || []).map(m => m.id);
+        if (models.indexOf(config.model) >= 0) {
+          dot.style.background = '#34c759';
+          text.textContent = '已连接 · ' + config.model;
+        } else {
+          dot.style.background = '#ff9f0a';
+          text.textContent = '模型未找到';
+        }
+      }).catch(() => {
+        dot.style.background = '#ff453a';
+        text.textContent = '未连接';
+      });
+    });
+  });
+}
+
+async function analyzeSleepWithAI() {
+  const resultContainer = document.getElementById('aiSleepResult');
+  if (!resultContainer) return;
+  const btn = document.getElementById('aiSleepBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 分析中...'; }
+
+  const sleepData = loadData(MODULES.sleep.key);
+  const sorted = sleepData.sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
+  const recent = sorted.slice(-30);
+
+  if (!recent.length) {
+    resultContainer.innerHTML = '<div style="color:var(--label-tertiary);padding:16px;">暂无睡眠数据，请先添加睡眠记录。</div>';
+    if (btn) { btn.disabled = false; btn.textContent = '🤖 AI 睡眠分析'; }
+    return;
+  }
+
+  let dataText = '以下是宝宝近期的睡眠记录（时间, 时长(分钟), 质量, 备注）：\n';
+  recent.forEach(r => {
+    dataText += `- ${r.datetime || '未知时间'} | ${r.duration || '?'}分钟 | 质量:${r.quality || '未知'} | 备注:${r.note || '无'}\n`;
+  });
+
+  const prompt = `你是一位专业的婴儿睡眠顾问。请根据以下宝宝的睡眠数据，提供一份详细的分析报告。
+
+【数据】
+${dataText}
+
+【分析要求】
+请从以下四个维度进行分析，用流畅的中文段落呈现：
+1. 睡眠时长规律：总时长是否充足？是否存在较大波动？
+2. 睡眠质量评估：根据质量标注，分析宝宝睡得好不好。
+3. 作息建议：结合数据，给出具体的改善作息时间的建议。
+4. 环境与健康提示：如有异常，给出可能的因素排查建议。
+
+【输出格式】
+请用清晰的标题分段，语言温和、专业、具体可操作。不要使用星号或Markdown，直接输出纯文本段落。`;
+
+  try {
+    const config = await getLLMConfig();
+    const headers = await buildLLMHeaders();
+    const res = await fetch(config.endpoint + '/v1/chat/completions', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        model: config.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.5,
+        max_tokens: 2048
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const analysis = json.choices?.[0]?.message?.content || '分析生成失败，请重试。';
+    resultContainer.innerHTML = `<div class="ai-analysis-box">${analysis}</div>`;
+  } catch (e) {
+    resultContainer.innerHTML = `<div style="color:var(--glass-red);padding:16px;">❌ 分析失败：${e.message}。请检查网络或大模型配置。</div>`;
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '🤖 AI 睡眠分析'; }
+}
+
+// ============ 统计图表 ============
+function renderStats(container) {
+  let html = `
+    <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span id="llmStatusDot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ccc;"></span>
+        <span id="llmStatusText" style="font-size:12px;color:var(--label-tertiary);">大模型状态</span>
+        <button class="btn btn-outline btn-xs" onclick="openLLMConfig()">⚙️ 配置</button>
+        <button class="btn btn-success btn-sm" id="aiSleepBtn" onclick="analyzeSleepWithAI()">🤖 AI 睡眠分析</button>
+      </div>
+    </div>
+    <div id="aiSleepResult" style="margin-bottom:16px;"></div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+      <div style="flex:1;min-width:280px;background:var(--thin-bg);border-radius:var(--r-md);padding:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">📊 喂养次数趋势</div>
+        <canvas id="feedingChart" style="height:200px;"></canvas>
+      </div>
+      <div style="flex:1;min-width:280px;background:var(--thin-bg);border-radius:var(--r-md);padding:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">😴 睡眠时长</div>
+        <canvas id="sleepChart" style="height:200px;"></canvas>
+      </div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;background:var(--thin-bg);border-radius:var(--r-md);padding:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">📏 身高体重曲线</div>
+        <canvas id="growthChart" style="height:200px;"></canvas>
+      </div>
+      <div style="flex:1;min-width:280px;background:var(--thin-bg);border-radius:var(--r-md);padding:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">💉 疫苗接种记录</div>
+        <div id="vaccineList" style="font-size:13px;"></div>
+      </div>
+    </div>
+  `;
+  container.innerHTML = html;
+  checkLLMStatusUI();
+  if (typeof Chart === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+    script.onload = () => drawCharts();
+    document.head.appendChild(script);
+  } else {
+    drawCharts();
+  }
+}
+
+function drawCharts() {
+  const feedData = loadData(MODULES.feeding.key);
+  const feedCounts = {};
+  feedData.forEach(f => { const d = f.datetime ? f.datetime.slice(0,10) : ''; if (d) feedCounts[d] = (feedCounts[d]||0) + 1; });
+  const dates = Object.keys(feedCounts).sort();
+  const counts = dates.map(d => feedCounts[d]);
+  if (document.getElementById('feedingChart') && dates.length) {
+    const ctx = document.getElementById('feedingChart').getContext('2d');
+    new Chart(ctx, { type: 'bar', data: { labels: dates, datasets: [{ label: '喂养次数', data: counts, backgroundColor: '#34c759' }] }, options: { responsive: true, maintainAspectRatio: false } });
+  }
+  const sleepData = loadData(MODULES.sleep.key);
+  const sleepMap = {};
+  sleepData.forEach(s => { const d = s.datetime ? s.datetime.slice(0,10) : ''; if (d && s.duration) sleepMap[d] = (sleepMap[d]||0) + Number(s.duration); });
+  const sDates = Object.keys(sleepMap).sort();
+  const sDurs = sDates.map(d => sleepMap[d]);
+  if (document.getElementById('sleepChart') && sDates.length) {
+    const ctx = document.getElementById('sleepChart').getContext('2d');
+    new Chart(ctx, { type: 'line', data: { labels: sDates, datasets: [{ label: '睡眠总时长(分钟)', data: sDurs, borderColor: '#8b5cf6', fill: false }] }, options: { responsive: true, maintainAspectRatio: false } });
+  }
+  const growthData = loadData(MODULES.growth.key);
+  growthData.sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
+  if (document.getElementById('growthChart') && growthData.length) {
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    new Chart(ctx, { type: 'line', data: { labels: growthData.map(g => g.datetime ? g.datetime.slice(0,10) : ''), datasets: [{ label: '身高 (cm)', data: growthData.map(g => g.height||0), borderColor: '#0ea5e9', fill: false }, { label: '体重 (kg)', data: growthData.map(g => g.weight||0), borderColor: '#f59e0b', fill: false }] }, options: { responsive: true, maintainAspectRatio: false } });
+  }
+  const vacData = loadData(MODULES.vaccine.key);
+  const vacContainer = document.getElementById('vaccineList');
+  if (vacContainer) {
+    if (!vacData.length) vacContainer.innerHTML = '<div style="color:var(--label-tertiary);">暂无疫苗记录</div>';
+    else vacContainer.innerHTML = vacData.map(v => `<div style="padding:4px 0;border-bottom:1px solid var(--fill-primary);">${v.datetime||''} — ${v.vaccine_name||''}</div>`).join('');
+  }
+}
+
+// ============ 数据迁移 ============
+function openMigrationModal() { document.getElementById('migrationModal').classList.add('active'); }
+function closeMigrationModal() { document.getElementById('migrationModal').classList.remove('active'); }
+async function exportAllData() {
+  const progress = document.getElementById('migrationProgress');
+  progress.style.display = 'block';
+  progress.textContent = '收集数据...';
+  const allData = {};
+  for (const [mod, cfg] of Object.entries(MODULES)) allData[mod] = loadData(cfg.key);
+  const files = await dbGetAll();
+  const blob = new Blob([JSON.stringify({ version: '1.0', exportTime: new Date().toISOString(), data: allData, files }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `婴儿数据备份_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  progress.textContent = '导出完成！';
+  setTimeout(() => progress.style.display = 'none', 2000);
+}
+async function importAllData(file) {
+  if (!file) return;
+  const progress = document.getElementById('migrationProgress');
+  progress.style.display = 'block';
+  progress.textContent = '读取文件...';
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!confirm('导入将覆盖当前所有数据，确定继续？')) { progress.style.display = 'none'; return; }
+    progress.textContent = '导入中...';
+    for (const mod of Object.keys(MODULES)) localStorage.removeItem(MODULES[mod].key);
+    for (const [mod, records] of Object.entries(data.data)) {
+      if (MODULES[mod]) saveData(MODULES[mod].key, records);
+    }
+    await dbClear();
+    if (data.files) { for (const f of data.files) await dbPut(f); }
+    progress.textContent = '导入成功！刷新页面...';
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) { progress.textContent = '导入失败：' + e.message; }
+}
+
+// ============ 三栏拖拽 ============
+(function() {
+  const app = document.querySelector('.app');
+  const leftResizer = document.getElementById('resizerLeft');
+  const rightResizer = document.getElementById('resizerRight');
+  let dragging = null, startX = 0, startLeft = 0, startRight = 0;
+  function getWidths() {
+    const style = getComputedStyle(app);
+    return { left: parseInt(style.getPropertyValue('--left-width')) || 220, right: parseInt(style.getPropertyValue('--right-width')) || 420 };
+  }
+  function onMouseDown(side, e) {
+    e.preventDefault();
+    dragging = side;
+    startX = e.clientX;
+    const w = getWidths();
+    startLeft = w.left; startRight = w.right;
+    app.classList.add('dragging');
+  }
+  function onMouseMove(e) {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const MIN = 80, MAX_L = 400, MAX_R = 700;
+    if (dragging === 'left') {
+      const newLeft = Math.min(MAX_L, Math.max(MIN, startLeft + dx));
+      app.style.setProperty('--left-width', newLeft + 'px');
+      app.style.gridTemplateColumns = newLeft + 'px 5px 1fr 5px ' + (app.style.getPropertyValue('--right-width') || '420px');
+    } else {
+      const newRight = Math.min(MAX_R, Math.max(MIN, startRight - dx));
+      app.style.setProperty('--right-width', newRight + 'px');
+      app.style.gridTemplateColumns = (app.style.getPropertyValue('--left-width') || '220px') + ' 5px 1fr 5px ' + newRight + 'px';
+    }
+  }
+  function onMouseUp() { if (dragging) { app.classList.remove('dragging'); dragging = null; } }
+  leftResizer.addEventListener('mousedown', onMouseDown.bind(null, 'left'));
+  rightResizer.addEventListener('mousedown', onMouseDown.bind(null, 'right'));
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+})();
+function togglePanel(side) {
+  const app = document.querySelector('.app');
+  if (side === 'left') {
+    const sidebar = document.querySelector('.left-sidebar');
+    sidebar.classList.toggle('collapsed');
+    const w = sidebar.classList.contains('collapsed') ? 40 : 220;
+    app.style.setProperty('--left-width', w + 'px');
+    app.style.gridTemplateColumns = w + 'px 5px 1fr 5px ' + (app.style.getPropertyValue('--right-width') || '420px');
+  } else {
+    const panel = document.getElementById('rightPanel');
+    panel.classList.toggle('collapsed');
+    const w = panel.classList.contains('collapsed') ? 40 : 420;
+    app.style.setProperty('--right-width', w + 'px');
+    app.style.gridTemplateColumns = (app.style.getPropertyValue('--left-width') || '220px') + ' 5px 1fr 5px ' + w + 'px';
+  }
+}
+
+// ============ 初始化 ============
+switchTab('dashboard');
+(async function updateWidget() {
+  const files = await dbGetAll();
+  document.getElementById('storageWidget').textContent = `📁 ${files.length}`;
+  checkLLMStatusUI();
+})();
+
+document.getElementById('importFileInput').addEventListener('change', function(e) {
+  if (this.files.length) { importAllData(this.files[0]); this.value = ''; }
+});
+
+console.log('👶 婴儿生活管家 · AI 版已启动（已完全隔离旧版缓存）');
+</script>
+</body>
+</html>
